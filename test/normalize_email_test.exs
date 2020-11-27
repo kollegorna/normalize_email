@@ -13,7 +13,8 @@ defmodule NormalizeEmailTest do
       "john.otander@gmail.com"
     ]
 
-    for email <- gmailEmails, do: assert(NormalizeEmail.normalize_email(email) == "johnotander@gmail.com")
+    for email <- gmailEmails,
+        do: assert(NormalizeEmail.normalize_email(email) == "johnotander@gmail.com")
   end
 
   test "normalizes live emails" do
@@ -27,7 +28,29 @@ defmodule NormalizeEmailTest do
       "john.otander@live.com"
     ]
 
-    for email <- liveEmails, do: assert(NormalizeEmail.normalize_email(email) == "johnotander@live.com")
+    for email <- liveEmails,
+        do: assert(NormalizeEmail.normalize_email(email) == "johnotander@live.com")
+  end
+
+  test "normalizes uncommon emails" do
+    uncommonEmails = [
+      "johnotander@colleagues.com",
+      "johnotander@colleagues.com",
+      "johnotander@colleagues.com",
+      "johnotander+foobar@colleagues.com",
+      "john.o.t.a.n.d.er+foobar@colleagues.com",
+      "JOHN.o.t.a.n.d.er+foobar@colleagues.com",
+      "john.otander@colleagues.com"
+    ]
+
+    allowed_emails = [
+      "john.o.t.a.n.d.er@colleagues.com",
+      "johnotander@colleagues.com",
+      "john.otander@colleagues.com"
+    ]
+
+    for email <- uncommonEmails,
+        do: assert(Enum.member?(allowed_emails, NormalizeEmail.normalize_email(email)))
   end
 
   test "returns the string if it isn't an email" do

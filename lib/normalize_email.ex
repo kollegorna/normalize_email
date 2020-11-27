@@ -16,48 +16,46 @@ defmodule NormalizeEmail do
   """
   def normalize_email(email) do
     if IsEmail.validate(email) do
-      if is_plus_email_provider(email) do
-        email = String.replace(email, ~r/\+(.*)@/, "@")
-      end
-
-      if is_dot_email_provider(email) do
-        [username, domain] = get_email_parts(email)
-        email = String.replace(username, ~r/\./, "") <> "@" <> domain
-      end
-
-      email = String.replace(email, ~r/googlemail\.com$/, "gmail.com")
-      String.downcase(email)
+      email
+      |> String.replace(~r/\+(.*)@/, "@")
+      |> normalize_dots()
+      |> normalize_domains()
+      |> String.downcase()
     else
       email
     end
   end
 
   @doc """
-  Checks whether the email domain allows `+` emails.
+  Normalizes an domain by replacing it with a common domain.
 
   Args:
 
   * `email` - the email to check, string
 
-  Returns a boolean.
+  Returns an email.
   """
-  def is_plus_email_provider(email) do
-    [_, domain] = get_email_parts(email)
-    String.match?(domain, ~r/^(live\.com|gmail\.com|googlemail\.com)$/)
-  end
- 
+
+  def normalize_domains(email),
+    do: String.replace(email, ~r/googlemail\.com$/, "gmail.com")
+
   @doc """
-  Checks whether the email domain allows `.` emails.
+  Normalizes `.` emails.
 
   Args:
 
   * `email` - the email to check, string
 
-  Returns a boolean.
+  Returns an email.
   """
-  def is_dot_email_provider(email) do
-    [_, domain] = get_email_parts(email)
-    String.match?(domain, ~r/^(live\.com|gmail\.com|googlemail\.com)$/)
+  def normalize_dots(email) do
+    [username, domain] = get_email_parts(email)
+
+    if String.match?(domain, ~r/^(live\.com|gmail\.com|googlemail\.com)$/) do
+      email = String.replace(username, ~r/\./, "") <> "@" <> domain
+    else
+      email
+    end
   end
 
   @doc """
